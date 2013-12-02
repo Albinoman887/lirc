@@ -172,8 +172,7 @@ if test x${no_kernel} != xyes; then
 	(lirc_dev lirc_sasem) \
 	(lirc_dev lirc_serial) \
 	(lirc_dev lirc_sir) \
-	(lirc_dev lirc_wpc8769l) \
-	(lirc_dev lirc_xbox)"
+	(lirc_dev lirc_wpc8769l)"
 fi
 
 AH_TEMPLATE([DAEMONIZE],
@@ -446,7 +445,7 @@ AC_ARG_WITH(driver,
                           srm7500libusb, tekram,
                           tekram_bt829, tira, tira_raw, ttusbir,
                           tuxbox, tvbox, udp, uirt2, uirt2_raw,
-                          usb_uirt_raw, usbx, wpc8769l, xbox],
+                          usb_uirt_raw, usbx, wpc8769l],
 driver=${withval},
 driver="unset"
 )
@@ -611,8 +610,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
 		;;
 	lirc_dev-lirc_wpc8769l)
 		;;
-	lirc_dev-lirc_xbox)
-  		;;
 	lirc_flyvideo)
 		;;
 	livedrive_midi)
@@ -1410,10 +1407,6 @@ if test "$driver" = "wpc8769l"; then
   lircd_conf="acer/lircd.conf.Aspire_6530G"
 fi
 
-if test "$driver" = "xbox"; then
-  lirc_driver="lirc_dev lirc_xbox"
-  lircd_conf="xbox/lircd.conf.xbox"
-fi
 
 #END HARDWARE HEURISTIC
 
@@ -1520,8 +1513,7 @@ elif test "$lirc_driver" = "all"; then
 	lirc_serial \
 	lirc_sir \
 	lirc_ttusbir \
-	lirc_wpc8769l \
-	lirc_xbox"
+	lirc_wpc8769l"
 fi
 if kernel_module=$(expr "$lirc_driver" : 'lirc_dev \(.*\)'); then
   :
@@ -1788,7 +1780,6 @@ AC_CONFIG_FILES([
   drivers/lirc_serial/Makefile
   drivers/lirc_sir/Makefile
   drivers/lirc_wpc8769l/Makefile
-  drivers/lirc_xbox/Makefile
   daemons/Makefile
   tools/Makefile
   doc/Makefile
