@@ -4,7 +4,7 @@ sudo apt-get install -y dialog automake autoconf libtool
 echo "Installing packages complete - Starting build..."
 echo "Running pre-compile scripts..."
 ./autogen.sh
-./configure -with-driver=userspace
+./configure -with-driver=xbox
 echo "Compiling Lirc driver: lirc_xbox"
 cd drivers/lirc_xbox/
 make
