@@ -8,7 +8,7 @@ LIRC_DEVDIR = $(PWD)
 # some magic for using linux kernel settings
 # when compiling module(s)
 KBUILD_VERBOSE = 1
-LIRC_EXTRA_CFLAGS = -DEXPORT_SYMTAB $(DEFS) \
+LIRC_EXTRA_CFLAGS = -DEXPORT_SYMTAB $(DEFS) -Wno-all \
 		$(DEFAULT_INCLUDES) -I$(LIRC_DEVDIR)/$(srcdir) -I$(LIRC_DEVDIR)/$(builddir) \
 		-I$(LIRC_DEVDIR)/$(top_srcdir) -I$(LIRC_DEVDIR)/$(top_builddir) \
 		-I$(KERNEL_LOCATION)/include/ \
