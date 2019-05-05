@@ -56,7 +56,7 @@
 #include <linux/list.h>
 
 #include "drivers/kcompat.h"
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 16, 0)
 #include <media/lirc.h>
 #include <media/lirc_dev.h>
 #else
@@ -78,6 +78,18 @@
 static int debug = 1;
 #else
 static int debug;
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
+/* returns negative value on error or minor number
+ * of the registered device if success
+ * contents of the structure pointed by p is copied
+ */
+extern int lirc_register_driver(struct lirc_driver *d);
+
+/* returns negative value on error or 0 if success
+*/
+extern int lirc_unregister_driver(int minor);
 #endif
 
 #define dprintk(fmt, args...)					\
@@ -979,14 +991,14 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_LICENSE("GPL");
 MODULE_DEVICE_TABLE(usb, usb_remote_table);
 
-module_param(debug, bool, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(debug, "Debug enabled or not (default: 0)");
+//module_param(debug, bool, S_IRUGO | S_IWUSR);
+//MODULE_PARM_DESC(debug, "Debug enabled or not (default: 0)");
 
 module_param(mask, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(mask, "Set channel acceptance bit mask (default: 0xFFFF)");
 
-module_param(unique, bool, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
+//module_param(unique, bool, S_IRUGO | S_IWUSR);
+//MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
 
 module_param(repeat, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(repeat, "Repeat timeout (1/100 sec) (default: 10)");
