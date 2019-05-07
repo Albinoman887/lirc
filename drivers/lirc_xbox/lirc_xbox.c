@@ -140,7 +140,7 @@ static struct usb_device_id usb_remote_table[] = {
 	 * Some Chinese manufacturer -- conflicts with the joystick from the
 	 * same manufacturer
 	 */
-	//{ USB_DEVICE(VENDOR_MS3, 0xFFFF) },
+	{ USB_DEVICE(VENDOR_MS3, 0xFFFF) },
 
 	/* Terminating entry */
 	{ }
