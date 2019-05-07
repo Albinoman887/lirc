@@ -80,17 +80,11 @@ static int debug = 1;
 static int debug;
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
-/* returns negative value on error or minor number
- * of the registered device if success
- * contents of the structure pointed by p is copied
- */
 extern int lirc_register_driver(struct lirc_driver *d);
 
 /* returns negative value on error or 0 if success
 */
 extern int lirc_unregister_driver(int minor);
-#endif
 
 #define dprintk(fmt, args...)					\
 	do {							\
