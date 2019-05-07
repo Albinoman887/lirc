@@ -991,11 +991,11 @@ MODULE_DEVICE_TABLE(usb, usb_remote_table);
 module_param(debug, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(debug, "Debug enabled or not (default: 0)");
 
-module_param(mask, int, S_IRUGO | S_IWUSR);
+module_param(mask, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(mask, "Set channel acceptance bit mask (default: 0xFFFF)");
 
 module_param(unique, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
 
-module_param(repeat, int, S_IRUGO | S_IWUSR);
+module_param(repeat, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(repeat, "Repeat timeout (1/100 sec) (default: 10)");
