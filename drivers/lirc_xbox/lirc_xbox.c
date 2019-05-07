@@ -994,8 +994,8 @@ MODULE_PARM_DESC(debug, "Debug enabled or not (default: 0)");
 module_param(mask, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(mask, "Set channel acceptance bit mask (default: 0xFFFF)");
 
-//module_param(unique, bool, S_IRUGO | S_IWUSR);
-//MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
+module_param(unique, uint, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
 
 module_param(repeat, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(repeat, "Repeat timeout (1/100 sec) (default: 10)");
