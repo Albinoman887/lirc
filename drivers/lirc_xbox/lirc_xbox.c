@@ -73,6 +73,10 @@
 #define CODE_MIN_LENGTH		6
 #define DECODE_LENGTH		1
 
+#ifndef URB_ASYNC_UNLINK
+#define URB_ASYNC_UNLINK 0
+#endif
+
 /* module parameters */
 #ifdef CONFIG_USB_DEBUG
 static int debug = 1;
