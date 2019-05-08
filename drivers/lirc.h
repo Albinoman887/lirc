@@ -1,20 +1,13 @@
 /*
  * lirc.h - linux infrared remote control header file
- * last modified 2010/06/03 by Jarod Wilson
+ * last modified 2010/07/13 by Jarod Wilson
  */
 
 #ifndef _LINUX_LIRC_H
 #define _LINUX_LIRC_H
 
-#if defined(__linux__)
 #include <linux/types.h>
 #include <linux/ioctl.h>
-#elif defined(_NetBSD_)
-#include <sys/ioctl.h>
-#elif defined(_CYGWIN_)
-#define __USE_LINUX_IOCTL_DEFS
-#include <sys/ioctl.h>
-#endif
 
 #define PULSE_BIT       0x01000000
 #define PULSE_MASK      0x00FFFFFF
@@ -40,6 +33,7 @@
 #define LIRC_IS_FREQUENCY(val) (LIRC_MODE2(val) == LIRC_MODE2_FREQUENCY)
 #define LIRC_IS_TIMEOUT(val) (LIRC_MODE2(val) == LIRC_MODE2_TIMEOUT)
 
+/* used heavily by lirc userspace */
 #define lirc_t int
 
 /*** lirc compatible hardware features ***/
@@ -83,6 +77,7 @@
 #define LIRC_CAN_SET_REC_FILTER           0x08000000
 
 #define LIRC_CAN_MEASURE_CARRIER          0x02000000
+#define LIRC_CAN_USE_WIDEBAND_RECEIVER    0x04000000
 
 #define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
 #define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
@@ -142,7 +137,7 @@
  */
 #define LIRC_SET_REC_FILTER_SPACE      _IOW('i', 0x0000001b, __u32)
 /*
- * if filter cannot be set independantly for pulse/space, this should
+ * if filter cannot be set independently for pulse/space, this should
  * be used
  */
 #define LIRC_SET_REC_FILTER            _IOW('i', 0x0000001c, __u32)
@@ -151,7 +146,7 @@
  * if enabled from the next key press on the driver will send
  * LIRC_MODE2_FREQUENCY packets
  */
-#define LIRC_SET_MEASURE_CARRIER_MODE  _IOW('i', 0x0000001d, __u32)
+#define LIRC_SET_MEASURE_CARRIER_MODE	_IOW('i', 0x0000001d, __u32)
 
 /*
  * to set a range use
@@ -167,5 +162,7 @@
 
 #define LIRC_SETUP_START               _IO('i', 0x00000021)
 #define LIRC_SETUP_END                 _IO('i', 0x00000022)
+
+#define LIRC_SET_WIDEBAND_RECEIVER     _IOW('i', 0x00000023, __u32)
 
 #endif

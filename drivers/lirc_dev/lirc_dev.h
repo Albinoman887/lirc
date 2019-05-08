@@ -9,7 +9,7 @@
 #ifndef _LINUX_LIRC_DEV_H
 #define _LINUX_LIRC_DEV_H
 
-#define MAX_IRCTL_DEVICES 4
+#define MAX_IRCTL_DEVICES 8
 #define BUFLEN            16
 
 #define mod(n, div) ((n) % (div))
@@ -19,7 +19,6 @@
 #include <linux/ioctl.h>
 #include <linux/poll.h>
 #include <linux/kfifo.h>
-
 #include "drivers/lirc.h"
 
 struct lirc_buffer {
@@ -29,75 +28,48 @@ struct lirc_buffer {
 	unsigned int size; /* in chunks */
 	/* Using chunks instead of bytes pretends to simplify boundary checking
 	 * And should allow for some performance fine tunning later */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	struct kfifo *fifo;
-#else
 	struct kfifo fifo;
-#endif
-	u8 fifo_initialized;
 };
 
 static inline void lirc_buffer_clear(struct lirc_buffer *buf)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	if (buf->fifo)
-		kfifo_reset(buf->fifo);
-#else
 	unsigned long flags;
 
-	if (buf->fifo_initialized) {
+	if (kfifo_initialized(&buf->fifo)) {
 		spin_lock_irqsave(&buf->fifo_lock, flags);
 		kfifo_reset(&buf->fifo);
 		spin_unlock_irqrestore(&buf->fifo_lock, flags);
 	} else
 		WARN(1, "calling %s on an uninitialized lirc_buffer\n",
 		     __func__);
-#endif
 }
 
 static inline int lirc_buffer_init(struct lirc_buffer *buf,
 				    unsigned int chunk_size,
 				    unsigned int size)
 {
-	int ret = 0;
+	int ret;
 
 	init_waitqueue_head(&buf->wait_poll);
 	spin_lock_init(&buf->fifo_lock);
 	buf->chunk_size = chunk_size;
 	buf->size = size;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	buf->fifo = kfifo_alloc(size*chunk_size, GFP_KERNEL, &buf->fifo_lock);
-	if (!buf->fifo)
-		return -ENOMEM;
-#else
 	ret = kfifo_alloc(&buf->fifo, size * chunk_size, GFP_KERNEL);
-	if (ret == 0)
-		buf->fifo_initialized = 1;
-#endif
 
 	return ret;
 }
 
 static inline void lirc_buffer_free(struct lirc_buffer *buf)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	if (buf->fifo)
-		kfifo_free(buf->fifo);
-#else
-	if (buf->fifo_initialized) {
+	if (kfifo_initialized(&buf->fifo)) {
 		kfifo_free(&buf->fifo);
-		buf->fifo_initialized = 0;
 	} else
 		WARN(1, "calling %s on an uninitialized lirc_buffer\n",
 		     __func__);
-#endif
 }
 
 static inline int lirc_buffer_len(struct lirc_buffer *buf)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	return kfifo_len(buf->fifo);
-#else
 	int len;
 	unsigned long flags;
 
@@ -106,7 +78,6 @@ static inline int lirc_buffer_len(struct lirc_buffer *buf)
 	spin_unlock_irqrestore(&buf->fifo_lock, flags);
 
 	return len;
-#endif
 }
 
 static inline int lirc_buffer_full(struct lirc_buffer *buf)
@@ -130,13 +101,8 @@ static inline unsigned int lirc_buffer_read(struct lirc_buffer *buf,
 	unsigned int ret = 0;
 
 	if (lirc_buffer_len(buf) >= buf->chunk_size)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-		ret = kfifo_get(buf->fifo, dest, buf->chunk_size);
-#else
 		ret = kfifo_out_locked(&buf->fifo, dest, buf->chunk_size,
 				       &buf->fifo_lock);
-#endif
-
 	return ret;
 
 }
@@ -146,12 +112,8 @@ static inline unsigned int lirc_buffer_write(struct lirc_buffer *buf,
 {
 	unsigned int ret;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-	ret = kfifo_put(buf->fifo, orig, buf->chunk_size);
-#else
 	ret = kfifo_in_locked(&buf->fifo, orig, buf->chunk_size,
 			      &buf->fifo_lock);
-#endif
 
 	return ret;
 }
@@ -169,10 +131,11 @@ struct lirc_driver {
 	void *data;
 	int min_timeout;
 	int max_timeout;
-	int (*add_to_buf) (void *data, struct lirc_buffer *buf);
+	int (*add_to_buf)(void *data, struct lirc_buffer *buf);
 	struct lirc_buffer *rbuf;
-	int (*set_use_inc) (void *data);
-	void (*set_use_dec) (void *data);
+	int (*set_use_inc)(void *data);
+	void (*set_use_dec)(void *data);
+	struct rc_dev *rdev;
 	const struct file_operations *fops;
 	struct device *dev;
 	struct module *owner;
@@ -189,8 +152,7 @@ struct lirc_driver {
  * code_length:
  * length of the remote control key code expressed in bits
  *
- * sample_rate equal to 0 means that no polling will be performed and
- * add_to_buf will be triggered by external events
+ * sample_rate:
  *
  * data:
  * it may point to any driver data and this pointer will be passed to
@@ -232,7 +194,7 @@ struct lirc_driver {
  *
  * returns negative value on error or minor number
  * of the registered device if success
- * contents of the structure pointed by d is copied
+ * contents of the structure pointed by p is copied
  */
 extern int lirc_register_driver(struct lirc_driver *d);
 
@@ -251,12 +213,7 @@ void *lirc_get_pdata(struct file *file);
 int lirc_dev_fop_open(struct inode *inode, struct file *file);
 int lirc_dev_fop_close(struct inode *inode, struct file *file);
 unsigned int lirc_dev_fop_poll(struct file *file, poll_table *wait);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
-int lirc_dev_fop_ioctl(struct inode *inode, struct file *file,
-			unsigned int cmd, unsigned long arg);
-#else
 long lirc_dev_fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-#endif
 ssize_t lirc_dev_fop_read(struct file *file, char __user *buffer, size_t length,
 			  loff_t *ppos);
 ssize_t lirc_dev_fop_write(struct file *file, const char __user *buffer,
