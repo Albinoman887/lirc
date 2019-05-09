@@ -77,17 +77,6 @@ static int debug = 1;
 static int debug;
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
-/* returns negative value on error or minor number
- * of the registered device if success
- * contents of the structure pointed by p is copied
- */
-extern int lirc_register_driver(struct lirc_driver *d);
-
-/* returns negative value on error or 0 if success
-*/
-extern int lirc_unregister_driver(int minor);
-#endif
 
 #define dprintk(fmt, args...)					\
 	do {							\
@@ -267,7 +256,7 @@ static int unregister_from_lirc(struct xbox_dev *ir)
 	devnum = ir->devnum;
 	dprintk(DRIVER_NAME "[%d]: unregister from lirc called\n", devnum);
 
-	lirc_unregister_driver(d->minor);
+	//lirc_unregister_driver(d->minor);
 
 	printk(DRIVER_NAME "[%d]: usb remote disconnected\n", devnum);
 	return 0;
@@ -906,7 +895,7 @@ static int usb_remote_probe(struct usb_interface *intf,
 		return -ENODEV;
 	}
 	if (ir->dev_refcount == 1) {
-		ir->d->minor = lirc_register_driver(ir->d);
+		//ir->d->minor = lirc_register_driver(ir->d);
 		if (ir->d->minor < 0) {
 			free_irctl(ir, FREE_ALL);
 			return -ENODEV;
